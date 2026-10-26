@@ -4,11 +4,24 @@
 
 This is a research project, not a product. It has a working planar four-bar search engine, an open task-specification format, and a set of recorded case studies. It has not yet produced a mechanism that was built and tested in hardware. This page says what works, what does not, and how the work was done.
 
+**[Try the four-bar playground →](https://mechanismo-ai.github.io/mechanism-design-ml/)** Drag a few target points and it designs a linkage that traces a path through them, in your browser.
+
+## Try it
+
+The [playground](https://mechanismo-ai.github.io/mechanism-design-ml/) designs a crank-rocker four-bar whose coupler point passes through 3 to 6 points you place in a 200 × 140 mm work area. It animates up to three designs and reports the error at each point, the minimum transmission angle and every dimension, and it can copy a design out as JSON. It usually finds designs within a few hundredths of a millimetre in a second or two.
+
+It uses a simplified solver written for the page (random valid designs, then Nelder–Mead refinement), not the project's research engine. It checks kinematics only: position, full crank rotation and transmission angle. The page is a single file, [`docs/index.html`](docs/index.html), and also runs offline if you save it. Slider-crank, cam and six-bar versions are planned.
+
+![A four-bar linkage whose coupler curve passes through three target points, with the crank, coupler, rocker and ground links drawn and the error at each target labelled](images/four-bar-research-engine.png)
+
+*A design from the research engine for a three-point task. It passed the engine's practical selection checks but not all of its preferred engineering thresholds, and it is not hardware-validated.*
+
 ## What exists
 
 - **OMTS, an open task-specification format for mechanisms.** A task says where a part must be carried, held or flipped, and to what tolerance, including timing, synchronization, collision geometry and dwell demands. Validation is strict: an unsupported feature is rejected loudly, never dropped silently.
 - **A planar four-bar research engine**, plus an experimental six-bar motion solver. It searches candidate mechanisms against three-pose tasks, checks each one against physical and kinematic criteria, and exports every candidate with its evidence.
 - **Verification tooling** for lines of mechanisms that must work together: master-cycle synchronization, per-task phase offsets, and sampled collision occupancy.
+- **A browser playground** (above) with a simplified four-bar path generator anyone can use without installing anything.
 - **Recorded case studies** (below), each following the same loop: a plain-language brief, a measured failure of the current engine, a capability design, and a decision.
 
 ## What does not exist yet
@@ -61,4 +74,4 @@ Python, with a PyTorch and NumPy engine and YAML and JSON-schema validation. Apa
 
 ## How this was built
 
-I built this with AI coding assistants (Claude, ChatGPT and Mistral). I set the direction, decided what to try next, and reviewed and merged every pull request. The assistants wrote most of the code and drafted most of the experiment documents. The main repository has more than 120 pull requests, and its commit history shows the assistants as co-authors. I'm saying so up front because a reader should know which parts are my judgment and which are assisted execution.
+I built this with AI coding assistants (Claude, ChatGPT and Mistral). I set the direction, decided what to try next, and reviewed and merged every pull request. The assistants wrote most of the code and drafted most of the experiment documents. The main repository has more than 120 pull requests, and its commit history shows the assistants as co-authors. I'm saying so plainly because a reader should know which parts are my judgment and which are assisted execution.
