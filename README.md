@@ -46,7 +46,8 @@ Every experiment followed one protocol: the scorecard and decision rules were wr
 
 ## Next
 
-Take one practical brief all the way to a mechanism that has been built, or at least simulated in CAD, and show it works. Then widen the library of mechanism types the engine can design.
+Private work continues on widening the range of mechanism types and on taking a practical brief through to a built mechanism. I’m happy to discuss it.
+
 
 ## Related work
 
