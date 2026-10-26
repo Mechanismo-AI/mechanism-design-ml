@@ -6,15 +6,6 @@ This is a research project, not a product. It has a working planar four-bar sear
 
 **[Try the four-bar playground →](https://mechanismo-ai.github.io/mechanism-design-ml/)** Drag a few target points and it designs a linkage that traces a path through them, in your browser.
 
-## Try it
-
-The [playground](https://mechanismo-ai.github.io/mechanism-design-ml/) designs a crank-rocker four-bar whose coupler point passes through 3 to 6 points you place in a 200 × 140 mm work area. It animates up to three designs and reports the error at each point, the minimum transmission angle and every dimension, and it can copy a design out as JSON. It usually finds designs within a few hundredths of a millimetre in a second or two.
-
-It uses a simplified solver written for the page (random valid designs, then Nelder–Mead refinement), not the project's research engine. It checks kinematics only: position, full crank rotation and transmission angle. The page is a single file, [`docs/index.html`](docs/index.html), and also runs offline if you save it. Slider-crank, cam and six-bar versions are planned.
-
-![A four-bar linkage whose coupler curve passes through three target points, with the crank, coupler, rocker and ground links drawn and the error at each target labelled](images/four-bar-research-engine.png)
-
-*A design from the research engine for a three-point task. It passed the engine's practical selection checks but not all of its preferred engineering thresholds, and it is not hardware-validated.*
 
 ## What exists
 
@@ -61,6 +52,15 @@ Every experiment followed one protocol: the scorecard and decision rules were wr
 
 Private work continues on widening the range of mechanism types and on taking a practical brief through to a built mechanism. I’m happy to discuss it.
 
+## Try it
+
+The [playground](https://mechanismo-ai.github.io/mechanism-design-ml/) designs a crank-rocker four-bar whose coupler point passes through 3 to 6 points you place in a 200 × 140 mm work area. It animates up to three designs and reports the error at each point, the minimum transmission angle and every dimension, and it can copy a design out as JSON. It usually finds designs within a few hundredths of a millimetre in a second or two.
+
+It uses a simplified solver written for the page (random valid designs, then Nelder–Mead refinement), not the project's research engine. It checks kinematics only: position, full crank rotation and transmission angle. The page is a single file, [`docs/index.html`](docs/index.html), and also runs offline if you save it. Slider-crank, cam and six-bar versions are planned.
+
+![A four-bar linkage whose coupler curve passes through three target points, with the crank, coupler, rocker and ground links drawn and the error at each target labelled](images/four-bar-research-engine.png)
+
+*A design from the research engine for a three-point task. It passed the engine's practical selection checks but not all of its preferred engineering thresholds, and it is not hardware-validated.*
 
 ## Related work
 
