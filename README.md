@@ -4,10 +4,6 @@
 
 This is a research project, not a product. It has a working planar four-bar search engine, an open task-specification format, and a set of recorded case studies. It has not yet produced a mechanism that was built and tested in hardware. This page says what works, what does not, and how the work was done.
 
-## How this was built
-
-I built this with AI coding assistants (Claude, ChatGPT and Mistral). I set the direction, decided what to try next, and reviewed and merged every pull request. The assistants wrote most of the code and drafted most of the experiment documents. The main repository has more than 120 pull requests, and its commit history shows the assistants as co-authors. I'm saying so up front because a reader should know which parts are my judgment and which are assisted execution.
-
 ## What exists
 
 - **OMTS, an open task-specification format for mechanisms.** A task says where a part must be carried, held or flipped, and to what tolerance, including timing, synchronization, collision geometry and dwell demands. Validation is strict: an unsupported feature is rejected loudly, never dropped silently.
@@ -61,3 +57,7 @@ This project is a small part of a fast-moving field. The [LINKS dataset](https:/
 This is a public summary. The full engineering record is kept in a private repository, and I'm glad to share it on request. The project's mission and review standards are in the [community repository](https://github.com/Mechanismo-AI/mechanism-generator-community).
 
 Python, with a PyTorch and NumPy engine and YAML and JSON-schema validation. Apache-2.0.
+
+## How this was built
+
+I built this with AI coding assistants (Claude, ChatGPT and Mistral). I set the direction, decided what to try next, and reviewed and merged every pull request. The assistants wrote most of the code and drafted most of the experiment documents. The main repository has more than 120 pull requests, and its commit history shows the assistants as co-authors. I'm saying so up front because a reader should know which parts are my judgment and which are assisted execution.
