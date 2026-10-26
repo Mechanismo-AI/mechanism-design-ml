@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Mechanism Generator Playground</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Drag target points and generate a four-bar linkage whose coupler point traces a path through them.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: drafting-table split. Large drawing sheet on the left, a narrow spec sheet on the right; stacks on phones. */
+:root {
+  --paper: #f1f2ee;
+  --sheet: #fbfbf8;
+  --ink: #1c2226;
+  --muted: #5c666c;
+  --rule: #d4d8d0;
+  --grid: #e4e7e0;
+  --accent: #c2501d;      /* coupler path, primary action */
+  --accent-ink: #ffffff;
+  --crank: #2d6bb0;
+  --rocker: #7b52ad;
+  --coupler: #3b4247;
+  --good: #2c7a48;
+  --warn: #a8740f;
+  --bad: #b23a37;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111518; --sheet: #171c20; --ink: #e3e7e3; --muted: #99a3a7; --rule: #2b3338; --grid: #1f262a;
+    --accent: #f08447; --accent-ink: #1a0f08; --crank: #6ea5e6; --rocker: #b48ee6; --coupler: #c9d0cf;
+    --good: #5bbf83; --warn: #e0b04a; --bad: #ee7d79; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111518; --sheet: #171c20; --ink: #e3e7e3; --muted: #99a3a7; --rule: #2b3338; --grid: #1f262a;
+  --accent: #f08447; --accent-ink: #1a0f08; --crank: #6ea5e6; --rocker: #b48ee6; --coupler: #c9d0cf;
+  --good: #5bbf83; --warn: #e0b04a; --bad: #ee7d79; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 28px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+.brand { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 4.2vw, 40px); line-height: 1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+.mech-select { display: flex; flex-direction: column; gap: 4px; }
+label, .label { font-size: 12px; color: var(--muted); }
+select, input[type="number"] {
+  font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 8px;
+}
+select:focus-visible, input:focus-visible, button:focus-visible, canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; min-width: 0; }
+.stage { display: flex; flex-direction: column; }
+.stage-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+button {
+  font: inherit; font-weight: 500; cursor: pointer; border-radius: 4px; padding: 7px 12px; border: 1px solid var(--rule);
+  background: var(--paper); color: var(--ink);
+}
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button.primary:hover { filter: brightness(1.06); }
+button:disabled { opacity: .5; cursor: default; }
+.canvas-box { position: relative; width: 100%; aspect-ratio: 10 / 7; max-width: 100%; }
+canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.hint { padding: 8px 12px 10px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--rule); }
+.status { font-family: var(--font-mono); font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.dot.ok { background: var(--good); } .dot.busy { background: var(--warn); } .dot.stale { background: var(--muted); }
+.panel { display: flex; flex-direction: column; }
+.panel section { padding: 12px 14px; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 10px; }
+.panel section:last-child { border-bottom: 0; }
+h2 { font-family: var(--font-mono); font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-family: var(--font-mono); font-size: 12px; padding: 5px 9px; }
+.chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--sheet); }
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.metric { display: flex; flex-direction: column; gap: 2px; }
+.metric .v { font-family: var(--font-display); font-size: 26px; font-weight: 600; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.metric .v small { font-family: var(--font-body); font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 3px; }
+.pill { align-self: flex-start; font-family: var(--font-mono); font-size: 11px; padding: 1px 7px; border-radius: 99px; border: 1px solid currentColor; }
+.pill.good { color: var(--good); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+th, td { text-align: left; padding: 4px 0; border-bottom: 1px dashed var(--rule); }
+th { font-weight: 500; color: var(--muted); font-size: 11.5px; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); }
+tr:last-child td { border-bottom: 0; }
+.swatch { display: inline-block; width: 10px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+.settings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field input { width: 100%; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink); }
+.note { font-size: 12px; color: var(--muted); max-width: 70ch; }
+.note a { color: inherit; }
+footer.foot { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.copied { font-family: var(--font-mono); font-size: 12px; color: var(--good); }
+.soon { font-size: 12px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">Mechanism Generator · Playground</span>
+      <h1>Trace a path with a four-bar</h1>
+    </div>
+    <div class="mech-select">
+      <label for="mech">Mechanism</label>
+      <select id="mech">
+        <option value="fourbar" selected>Four-bar linkage</option>
+        <option value="slider" disabled>Slider-crank (coming soon)</option>
+        <option value="cam" disabled>Cam and follower (coming soon)</option>
+        <option value="sixbar" disabled>Six-bar linkage (coming soon)</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="sheet stage">
+      <div class="stage-bar">
+        <div class="status" id="status" role="status" aria-live="polite"><span class="dot" id="statusDot"></span><span id="statusText">Starting</span></div>
+        <div class="btns">
+          <button id="btnRandom" type="button">Random points</button>
+          <button id="btnPlay" type="button" aria-pressed="true">Pause</button>
+          <button id="btnGen" type="button" class="primary">Generate</button>
+        </div>
+      </div>
+      <div class="canvas-box"><canvas id="cv" tabindex="0" aria-label="Drawing area. Target points and the generated linkage."></canvas></div>
+      <div class="hint">Drag a point to move it. Click inside the dashed work area to add one (up to 6). Double-click a point to remove it (at least 3 stay). Units are millimetres.</div>
+    </div>
+
+    <aside class="sheet panel" aria-label="Design details">
+      <section>
+        <h2>Designs found</h2>
+        <div class="chips" id="chips"></div>
+      </section>
+      <section>
+        <h2>Fit</h2>
+        <div class="metrics">
+          <div class="metric"><span class="label">Worst point error</span><span class="v" id="mMax">–</span><span class="pill" id="pMax" hidden></span></div>
+          <div class="metric"><span class="label">Min. transmission angle</span><span class="v" id="mMu">–</span><span class="pill" id="pMu" hidden></span></div>
+        </div>
+        <table aria-label="Error at each target point">
+          <thead><tr><th>Point</th><th class="num">Error (mm)</th><th class="num">Crank angle</th></tr></thead>
+          <tbody id="tTargets"></tbody>
+        </table>
+      </section>
+      <section>
+        <h2>Dimensions (mm)</h2>
+        <table aria-label="Link lengths">
+          <tbody id="tLinks"></tbody>
+        </table>
+        <div class="btns"><button id="btnCopy" type="button">Copy design as JSON</button><span class="copied" id="copied" hidden>Copied</span></div>
+        <textarea id="copyFallback" hidden readonly rows="6" style="width:100%;font-family:var(--font-mono);font-size:11px;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:4px;"></textarea>
+      </section>
+      <section>
+        <h2>Requirements</h2>
+        <div class="settings">
+          <div class="field"><label for="tol">Point tolerance (mm)</label><input id="tol" type="number" min="0.05" max="20" step="0.05" value="1"></div>
+          <div class="field"><label for="muLim">Min. transmission (°)</label><input id="muLim" type="number" min="10" max="60" step="1" value="30"></div>
+        </div>
+        <label class="check"><input id="auto" type="checkbox" checked> Generate again after each edit</label>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="foot">
+    <p class="note">This is a simplified demo solver: many random crank-rocker designs, then Nelder–Mead refinement of the best ones. It checks kinematics only (position, full crank rotation, transmission angle) and ignores loads, collisions and manufacturing. It is not the project's research engine. <a href="https://github.com/Mechanismo-AI/mechanism-design-ml" target="_blank" rel="noopener">About the project</a></p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  // ---------- workspace ----------
+  const WS = { x0: -100, x1: 100, y0: -70, y1: 70 };   // mm, the area target points live in
+  const MAXP = 6, MINP = 3;
+  let targets = [[-62, -18], [-24, 38], [38, 34], [68, -12]];
+
+  // ---------- seeded random ----------
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function hashPts(pts, extra) { let h = 2166136261 ^ extra; for (const [x, y] of pts) { h = Math.imul(h ^ Math.round(x * 100), 16777619); h = Math.imul(h ^ Math.round(y * 100), 16777619); } return h >>> 0; }
+
+  // ---------- kinematics ----------
+  // v = [x2, y2, x4, y4, a(crank), b(coupler), c(rocker), p(along AB), q(perpendicular)]
+  function pose(v, br, th) {
+    const ax = v[0] + v[4] * Math.cos(th), ay = v[1] + v[4] * Math.sin(th);
+    const dx = v[2] - ax, dy = v[3] - ay, d = Math.hypot(dx, dy), b = v[5], c = v[6];
+    if (d < 1e-9 || d > b + c || d < Math.abs(b - c)) return null;
+    const al = (b * b - c * c + d * d) / (2 * d), h2 = b * b - al * al;
+    if (h2 < 0) return null;
+    const h = Math.sqrt(h2), ux = dx / d, uy = dy / d;
+    const bx = ax + al * ux - br * h * uy, by = ay + al * uy + br * h * ux;
+    const ex = (bx - ax) / b, ey = (by - ay) / b;
+    const px = ax + v[7] * ex - v[8] * ey, py = ay + v[7] * ey + v[8] * ex;
+    let cm = (b * b + c * c - d * d) / (2 * b * c); cm = Math.max(-1, Math.min(1, cm));
+    let mu = Math.acos(cm); if (mu > Math.PI / 2) mu = Math.PI - mu;
+    return { ax, ay, bx, by, px, py, mu };
+  }
+  function grashofCrank(v) {
+    const g = Math.hypot(v[2] - v[0], v[3] - v[1]), a = v[4], b = v[5], c = v[6];
+    if (a <= 0 || b <= 0 || c <= 0 || g <= 0) return 1;
+    const m = Math.min(b, c, g);
+    let viol = Math.max(0, a - m);
+    const s = Math.min(a, b, c, g), l = Math.max(a, b, c, g), rest = a + b + c + g - s - l;
+    viol += Math.max(0, s + l - rest);
+    return viol;
+  }
+  function segDist(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy;
+    let t = L2 > 0 ? ((px - x1) * dx + (py - y1) * dy) / L2 : 0; t = t < 0 ? 0 : t > 1 ? 1 : t;
+    const qx = x1 + t * dx - px, qy = y1 + t * dy - py; return Math.sqrt(qx * qx + qy * qy);
+  }
+  // full evaluation: curve, errors, matched angle, min transmission
+  function evaluate(v, br, pts, N) {
+    const cx = new Float64Array(N), cy = new Float64Array(N); let muMin = Math.PI;
+    for (let k = 0; k < N; k++) {
+      const P = pose(v, br, 2 * Math.PI * k / N); if (!P) return null;
+      cx[k] = P.px; cy[k] = P.py; if (P.mu < muMin) muMin = P.mu;
+    }
+    const errs = [], idx = [];
+    for (const [tx, ty] of pts) {
+      let best = Infinity, bi = 0;
+      for (let k = 0; k < N; k++) {
+        const k2 = (k + 1) % N, d = segDist(tx, ty, cx[k], cy[k], cx[k2], cy[k2]);
+        if (d < best) { best = d; bi = k; }
+      }
+      errs.push(best); idx.push(bi);
+    }
+    return { cx, cy, errs, idx, muMin };
+  }
+
+  // ---------- objective ----------
+  function makeObjective(pts, br, ctx, N) {
+    const muLim = ctx.muLim * Math.PI / 180;
+    return function (v) {
+      const gv = grashofCrank(v);
+      if (gv > 0) return 1e3 + gv / ctx.L;
+      const E = evaluate(v, br, pts, N);
+      if (!E) return 1e3;
+      let f = 0; for (const e of E.errs) f += (e / ctx.L) * (e / ctx.L);
+      if (E.muMin < muLim) { const r = (muLim - E.muMin) / muLim; f += 1e-2 * r * r + 1e-4; }
+      // keep pivots near the work
+      for (const [x, y] of [[v[0], v[1]], [v[2], v[3]]]) {
+        const ox = Math.max(0, Math.abs(x - ctx.cx) - ctx.box), oy = Math.max(0, Math.abs(y - ctx.cy) - ctx.box);
+        f += 1e-3 * ((ox * ox + oy * oy) / (ctx.L * ctx.L));
+      }
+      const maxLink = Math.max(v[4], v[5], v[6], Math.abs(v[7]), Math.abs(v[8]));
+      f += 1e-9 * (maxLink / ctx.L) * (maxLink / ctx.L);
+      return f;
+    };
+  }
+
+  // ---------- Nelder-Mead ----------
+  function nelderMead(f, x0, step, maxEval) {
+    const n = x0.length; let S = [x0.slice()], F = [f(x0)], evals = 1;
+    for (let i = 0; i < n; i++) { const x = x0.slice(); x[i] += step[i]; S.push(x); F.push(f(x)); evals++; }
+    while (evals < maxEval) {
+      const ord = F.map((_, i) => i).sort((i, j) => F[i] - F[j]); S = ord.map(i => S[i]); F = ord.map(i => F[i]);
+      if (Math.abs(F[n] - F[0]) <= 1e-14 * (Math.abs(F[0]) + 1e-20)) break;
+      const c = new Array(n).fill(0);
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) c[j] += S[i][j] / n;
+      const xr = c.map((cj, j) => cj + (cj - S[n][j])); const fr = f(xr); evals++;
+      if (fr < F[0]) {
+        const xe = c.map((cj, j) => cj + 2 * (cj - S[n][j])); const fe = f(xe); evals++;
+        if (fe < fr) { S[n] = xe; F[n] = fe; } else { S[n] = xr; F[n] = fr; }
+      } else if (fr < F[n - 1]) { S[n] = xr; F[n] = fr; }
+      else {
+        const out = fr < F[n];
+        const xc = c.map((cj, j) => out ? cj + 0.5 * (xr[j] - cj) : cj + 0.5 * (S[n][j] - cj)); const fc = f(xc); evals++;
+        if (fc < (out ? fr : F[n])) { S[n] = xc; F[n] = fc; }
+        else { for (let i = 1; i <= n; i++) { S[i] = S[i].map((s, j) => S[0][j] + 0.5 * (s - S[0][j])); F[i] = f(S[i]); evals++; } }
+      }
+    }
+    let bi = 0; for (let i = 1; i <= n; i++) if (F[i] < F[bi]) bi = i;
+    return { x: S[bi], f: F[bi] };
+  }
+
+  // ---------- synthesis ----------
+  const sleep = () => new Promise(r => setTimeout(r, 0));
+  let runId = 0, runCounter = 0;
+  async function synthesize(pts, opts, onProgress) {
+    const my = ++runId;
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const [x, y] of pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    const L = Math.max(Math.hypot(x1 - x0, y1 - y0), 40);
+    const ctx = { L, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, box: 1.3 * L, muLim: opts.muLim };
+    const rnd = mulberry32(hashPts(pts, opts.seed));
+    const U = (a, b) => a + (b - a) * rnd();
+    const coarse = [makeObjective(pts, 1, ctx, 72), makeObjective(pts, -1, ctx, 72)];
+    const pool = [];
+    let tried = 0, valid = 0;
+    const WANT = 2500;
+    while (valid < WANT && tried < 400000) {
+      for (let k = 0; k < 400 && valid < WANT; k++) {
+        tried++;
+        const v = [U(ctx.cx - ctx.box, ctx.cx + ctx.box), U(ctx.cy - ctx.box, ctx.cy + ctx.box),
+                   U(ctx.cx - ctx.box, ctx.cx + ctx.box), U(ctx.cy - ctx.box, ctx.cy + ctx.box),
+                   U(0.06 * L, 0.7 * L), U(0.15 * L, 2.0 * L), U(0.15 * L, 2.0 * L), 0, 0];
+        if (grashofCrank(v) > 0) continue;
+        v[7] = U(-0.6, 1.6) * v[5]; v[8] = U(-1.4, 1.4) * v[5];
+        const br = rnd() < 0.5 ? 1 : -1;
+        const f = coarse[br > 0 ? 0 : 1](v);
+        valid++;
+        if (f < 1e3) { pool.push({ v, br, f }); }
+      }
+      if (my !== runId) return null;
+      onProgress(0.35 * valid / WANT); await sleep();
+    }
+    pool.sort((a, b) => a.f - b.f);
+    const seeds = [];
+    for (const c of pool) {
+      if (seeds.length >= 14) break;
+      if (seeds.every(s => s.br !== c.br || dist(s.v, c.v) > 0.08 * L)) seeds.push(c);
+    }
+    const fine = { 1: makeObjective(pts, 1, ctx, 180), [-1]: makeObjective(pts, -1, ctx, 180) };
+    const refined = [];
+    for (let i = 0; i < seeds.length; i++) {
+      const s = seeds[i];
+      const step = [0.08 * L, 0.08 * L, 0.08 * L, 0.08 * L, 0.04 * L, 0.06 * L, 0.06 * L, 0.06 * L, 0.06 * L];
+      let r = nelderMead(fine[s.br], s.v, step, 1600);
+      r = nelderMead(fine[s.br], r.x, step.map(x => x * 0.15), 900);
+      refined.push({ v: r.x, br: s.br, f: r.f });
+      if (my !== runId) return null;
+      onProgress(0.35 + 0.65 * (i + 1) / seeds.length); await sleep();
+    }
+    refined.sort((a, b) => a.f - b.f);
+    const out = [];
+    for (const c of refined) {
+      if (c.f >= 1e3) continue;
+      if (out.every(o => o.br !== c.br || dist(o.v, c.v) > 0.05 * L)) out.push(c);
+      if (out.length >= 3) break;
+    }
+    return out.map(c => ({ v: c.v, br: c.br, report: evaluate(c.v, c.br, pts, 720) })).filter(c => c.report);
+  }
+  function dist(a, b) { let s = 0; for (let i = 0; i < a.length; i++) s += (a[i] - b[i]) ** 2; return Math.sqrt(s); }
+
+  // ---------- state + UI ----------
+  const cv = document.getElementById("cv"), g = cv.getContext("2d");
+  const el = id => document.getElementById(id);
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let designs = [], current = 0, stale = false, busy = false, theta = 0.6, playing = !reduceMotion;
+  let colors = {};
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement), r = n => cs.getPropertyValue(n).trim();
+    colors = { paper: r("--sheet"), ink: r("--ink"), muted: r("--muted"), grid: r("--grid"), rule: r("--rule"), accent: r("--accent"),
+      crank: r("--crank"), rocker: r("--rocker"), coupler: r("--coupler"), good: r("--good"), bad: r("--bad") };
+  }
+  readColors();
+  if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readColors);
+  new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  function setStatus(kind, text) { el("statusDot").className = "dot " + kind; el("statusText").textContent = text; }
+  function fmt(x, d) { return (Math.round(x * 10 ** d) / 10 ** d).toFixed(d); }
+
+  async function generate() {
+    const tol = Math.max(0.05, +el("tol").value || 1), muLim = Math.min(60, Math.max(10, +el("muLim").value || 30));
+    busy = true; el("btnGen").disabled = true; setStatus("busy", "Searching 0%");
+    const t0 = performance.now();
+    const res = await synthesize(targets.map(p => p.slice()), { seed: ++runCounter, muLim }, p => setStatus("busy", "Searching " + Math.round(p * 100) + "%"));
+    if (res === null) return;  // superseded by a newer run
+    busy = false; el("btnGen").disabled = false;
+    designs = res; current = 0; stale = false;
+    const secs = ((performance.now() - t0) / 1000).toFixed(1);
+    if (!designs.length) { setStatus("stale", "No valid design found. Move the points and try again."); }
+    else {
+      const best = Math.max(...designs[0].report.errs);
+      setStatus("ok", (best <= tol ? "Within tolerance" : "Closest found") + " · " + designs.length + " design" + (designs.length > 1 ? "s" : "") + " · " + secs + " s");
+    }
+    renderPanel();
+  }
+
+  function renderPanel() {
+    const tol = Math.max(0.05, +el("tol").value || 1), muLim = +el("muLim").value || 30;
+    const chips = el("chips"); chips.textContent = "";
+    designs.forEach((d, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip";
+      b.setAttribute("aria-pressed", String(i === current));
+      b.textContent = "Design " + "ABC"[i] + " · " + fmt(Math.max(...d.report.errs), 2) + " mm";
+      b.addEventListener("click", () => { current = i; renderPanel(); });
+      chips.appendChild(b);
+    });
+    if (!designs.length) { const s = document.createElement("span"); s.className = "soon"; s.textContent = "None yet."; chips.appendChild(s); }
+    const d = designs[current];
+    const tT = el("tTargets"), tL = el("tLinks"); tT.textContent = ""; tL.textContent = "";
+    if (!d) { el("mMax").textContent = "–"; el("mMu").textContent = "–"; el("pMax").hidden = true; el("pMu").hidden = true; return; }
+    const R = d.report, mx = Math.max(...R.errs), mu = R.muMin * 180 / Math.PI;
+    el("mMax").innerHTML = fmt(mx, 2) + "<small>mm</small>";
+    el("mMu").innerHTML = fmt(mu, 1) + "<small>°</small>";
+    const pM = el("pMax"); pM.hidden = false;
+    if (mx <= tol) { pM.className = "pill good"; pM.textContent = "within " + tol + " mm"; }
+    else if (mx <= 3 * tol) { pM.className = "pill warn"; pM.textContent = "near " + tol + " mm"; }
+    else { pM.className = "pill bad"; pM.textContent = "misses " + tol + " mm"; }
+    const pU = el("pMu"); pU.hidden = false;
+    if (mu >= Math.max(muLim, 40)) { pU.className = "pill good"; pU.textContent = "good"; }
+    else if (mu >= muLim) { pU.className = "pill warn"; pU.textContent = "acceptable"; }
+    else { pU.className = "pill bad"; pU.textContent = "below " + muLim + "°"; }
+    R.errs.forEach((e, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = "<td>T" + (i + 1) + "</td><td class='num'>" + fmt(e, 2) + "</td><td class='num'>" + fmt(R.idx[i] * 360 / 720, 1) + "°</td>";
+      tT.appendChild(tr);
+    });
+    const v = d.v, gl = Math.hypot(v[2] - v[0], v[3] - v[1]);
+    const rows = [["Ground", gl, "--muted"], ["Crank", v[4], "--crank"], ["Coupler", v[5], "--coupler"], ["Rocker", v[6], "--rocker"],
+      ["Coupler point, along", v[7], "--accent"], ["Coupler point, across", v[8], "--accent"]];
+    for (const [n, x, tok] of rows) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = "<td><span class='swatch' style='background:var(" + tok + ")'></span>" + n + "</td><td class='num'>" + fmt(x, 1) + "</td>";
+      tL.appendChild(tr);
+    }
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>Pivots (crank, rocker)</td><td class='num'>(" + fmt(v[0], 1) + ", " + fmt(v[1], 1) + ")<br>(" + fmt(v[2], 1) + ", " + fmt(v[3], 1) + ")</td>";
+    tL.appendChild(tr);
+  }
+
+  function designJSON() {
+    const d = designs[current]; if (!d) return "";
+    const v = d.v, r = x => Math.round(x * 1000) / 1000;
+    return JSON.stringify({
+      mechanism: "four-bar crank-rocker", units: "mm", note: "Kinematic demo result. Not checked for loads, collisions or manufacturing.",
+      crank_pivot: [r(v[0]), r(v[1])], rocker_pivot: [r(v[2]), r(v[3])],
+      ground: r(Math.hypot(v[2] - v[0], v[3] - v[1])), crank: r(v[4]), coupler: r(v[5]), rocker: r(v[6]),
+      coupler_point: { along_coupler: r(v[7]), across_coupler: r(v[8]) }, assembly_branch: d.br,
+      targets: targets.map(p => [r(p[0]), r(p[1])]), errors_mm: d.report.errs.map(r),
+      min_transmission_angle_deg: r(d.report.muMin * 180 / Math.PI)
+    }, null, 2);
+  }
+
+  // ---------- drawing ----------
+  let view = { s: 1, ox: 0, oy: 0 };
+  function fitView() {
+    const W = cv.clientWidth, H = cv.clientHeight;
+    let x0 = WS.x0, x1 = WS.x1, y0 = WS.y0, y1 = WS.y1;
+    const d = designs[current];
+    if (d) {
+      const v = d.v, R = d.report;
+      const ext = [[v[0] - v[4], v[1] - v[4]], [v[0] + v[4], v[1] + v[4]], [v[2], v[3]]];
+      for (let k = 0; k < 720; k += 6) { const P = pose(v, d.br, 2 * Math.PI * k / 720); if (P) ext.push([P.bx, P.by], [P.px, P.py]); }
+      for (const [x, y] of ext) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    }
+    const pad = 0.06 * Math.max(x1 - x0, y1 - y0); x0 -= pad; x1 += pad; y0 -= pad; y1 += pad;
+    const s = Math.min(W / (x1 - x0), H / (y1 - y0));
+    view = { s, ox: W / 2 - s * (x0 + x1) / 2, oy: H / 2 + s * (y0 + y1) / 2 };
+  }
+  const X = x => view.ox + view.s * x, Y = y => view.oy - view.s * y;
+  const toWorld = (px, py) => [(px - view.ox) / view.s, (view.oy - py) / view.s];
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  new ResizeObserver(() => { resize(); }).observe(cv);
+  resize();
+
+  function line(x1, y1, x2, y2, col, w) { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(X(x1), Y(y1)); g.lineTo(X(x2), Y(y2)); g.stroke(); }
+  function joint(x, y, col) { g.fillStyle = colors.paper; g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.arc(X(x), Y(y), 4.5, 0, 7); g.fill(); g.stroke(); }
+  function groundSym(x, y) {
+    const px = X(x), py = Y(y);
+    g.strokeStyle = colors.ink; g.lineWidth = 1.5; g.fillStyle = colors.paper;
+    g.beginPath(); g.moveTo(px, py); g.lineTo(px - 9, py + 14); g.lineTo(px + 9, py + 14); g.closePath(); g.fill(); g.stroke();
+    g.beginPath(); g.moveTo(px - 13, py + 14); g.lineTo(px + 13, py + 14); g.stroke();
+    g.lineWidth = 1; for (let i = -12; i <= 10; i += 5) { g.beginPath(); g.moveTo(px + i, py + 14); g.lineTo(px + i - 5, py + 20); g.stroke(); }
+  }
+
+  function draw() {
+    fitView();
+    const W = cv.clientWidth, H = cv.clientHeight;
+    g.clearRect(0, 0, W, H); g.fillStyle = colors.paper; g.fillRect(0, 0, W, H);
+    // grid every 10 mm, labels every 50 mm
+    const [wx0, wy1] = toWorld(0, 0), [wx1, wy0] = toWorld(W, H);
+    g.lineWidth = 1;
+    for (let x = Math.ceil(wx0 / 10) * 10; x <= wx1; x += 10) { g.strokeStyle = x % 50 === 0 ? colors.rule : colors.grid; g.beginPath(); g.moveTo(X(x) + .5, 0); g.lineTo(X(x) + .5, H); g.stroke(); }
+    for (let y = Math.ceil(wy0 / 10) * 10; y <= wy1; y += 10) { g.strokeStyle = y % 50 === 0 ? colors.rule : colors.grid; g.beginPath(); g.moveTo(0, Y(y) + .5); g.lineTo(W, Y(y) + .5); g.stroke(); }
+    g.fillStyle = colors.muted; g.font = "10px " + getComputedStyle(document.body).getPropertyValue("--font-mono");
+    g.textBaseline = "top";
+    for (let x = Math.ceil(wx0 / 50) * 50; x <= wx1; x += 50) g.fillText(String(x), X(x) + 3, 3);
+    for (let y = Math.ceil(wy0 / 50) * 50; y <= wy1; y += 50) if (y !== 0 || true) g.fillText(String(y), 3, Y(y) + 3);
+    // workspace frame
+    g.setLineDash([4, 4]); g.strokeStyle = colors.muted; g.lineWidth = 1;
+    g.strokeRect(X(WS.x0), Y(WS.y1), view.s * (WS.x1 - WS.x0), view.s * (WS.y1 - WS.y0)); g.setLineDash([]);
+
+    const d = designs[current];
+    g.globalAlpha = stale ? 0.35 : 1;
+    if (d) {
+      const R = d.report, v = d.v;
+      // coupler path
+      g.strokeStyle = colors.accent; g.lineWidth = 2; g.beginPath();
+      for (let k = 0; k <= R.cx.length; k++) { const i = k % R.cx.length; k ? g.lineTo(X(R.cx[i]), Y(R.cy[i])) : g.moveTo(X(R.cx[i]), Y(R.cy[i])); }
+      g.stroke();
+      const P = pose(v, d.br, theta);
+      if (P) {
+        // coupler triangle
+        g.fillStyle = colors.coupler; g.globalAlpha = (stale ? 0.35 : 1) * 0.12;
+        g.beginPath(); g.moveTo(X(P.ax), Y(P.ay)); g.lineTo(X(P.bx), Y(P.by)); g.lineTo(X(P.px), Y(P.py)); g.closePath(); g.fill();
+        g.globalAlpha = stale ? 0.35 : 1;
+        line(P.ax, P.ay, P.px, P.py, colors.coupler, 2); line(P.bx, P.by, P.px, P.py, colors.coupler, 2);
+        line(v[0], v[1], v[2], v[3], colors.muted, 1);
+        line(P.ax, P.ay, P.bx, P.by, colors.coupler, 4);
+        line(v[0], v[1], P.ax, P.ay, colors.crank, 4.5);
+        line(v[2], v[3], P.bx, P.by, colors.rocker, 4.5);
+        groundSym(v[0], v[1]); groundSym(v[2], v[3]);
+        joint(v[0], v[1], colors.ink); joint(v[2], v[3], colors.ink);
+        joint(P.ax, P.ay, colors.crank); joint(P.bx, P.by, colors.rocker);
+        g.fillStyle = colors.accent; g.beginPath(); g.arc(X(P.px), Y(P.py), 5.5, 0, 7); g.fill();
+      }
+    }
+    g.globalAlpha = 1;
+    // targets
+    g.font = "600 12px " + getComputedStyle(document.body).getPropertyValue("--font-body"); g.textBaseline = "bottom";
+    targets.forEach(([x, y], i) => {
+      const px = X(x), py = Y(y), hot = i === dragIdx || i === hoverIdx;
+      g.strokeStyle = colors.ink; g.lineWidth = hot ? 2.5 : 2;
+      g.beginPath(); g.moveTo(px - 7, py - 7); g.lineTo(px + 7, py + 7); g.moveTo(px + 7, py - 7); g.lineTo(px - 7, py + 7); g.stroke();
+      if (hot) { g.beginPath(); g.arc(px, py, 12, 0, 7); g.stroke(); }
+      g.fillStyle = colors.ink; g.fillText("T" + (i + 1), px + 9, py - 6);
+    });
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (playing && designs.length) theta = (theta + dt * 1.3) % (2 * Math.PI);
+    draw(); requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // ---------- interaction ----------
+  let dragIdx = -1, hoverIdx = -1, lastTap = { i: -1, t: 0 }, pending = null;
+  function hit(px, py) { let bi = -1, bd = 16; targets.forEach(([x, y], i) => { const d = Math.hypot(X(x) - px, Y(y) - py); if (d < bd) { bd = d; bi = i; } }); return bi; }
+  function local(e) { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  function clampWS(x, y) { return [Math.max(WS.x0, Math.min(WS.x1, x)), Math.max(WS.y0, Math.min(WS.y1, y))]; }
+  function edited() {
+    stale = true; setStatus("stale", "Points changed");
+    if (el("auto").checked) { clearTimeout(pending); pending = setTimeout(generate, 250); }
+  }
+  function removePoint(i) { if (targets.length > MINP) { targets.splice(i, 1); hoverIdx = -1; edited(); } }
+  cv.addEventListener("pointerdown", e => {
+    const [px, py] = local(e), i = hit(px, py), now = performance.now();
+    if (i >= 0) {
+      if (e.pointerType !== "mouse" && lastTap.i === i && now - lastTap.t < 350) { removePoint(i); lastTap = { i: -1, t: 0 }; return; }
+      lastTap = { i, t: now }; dragIdx = i; cv.setPointerCapture(e.pointerId); return;
+    }
+    const [wx, wy] = toWorld(px, py);
+    if (targets.length < MAXP && wx >= WS.x0 && wx <= WS.x1 && wy >= WS.y0 && wy <= WS.y1) { targets.push([Math.round(wx), Math.round(wy)]); edited(); }
+  });
+  cv.addEventListener("pointermove", e => {
+    const [px, py] = local(e);
+    if (dragIdx >= 0) { const [wx, wy] = toWorld(px, py); targets[dragIdx] = clampWS(Math.round(wx), Math.round(wy)); stale = true; setStatus("stale", "Points changed"); return; }
+    hoverIdx = hit(px, py); cv.style.cursor = hoverIdx >= 0 ? "grab" : "crosshair";
+  });
+  const endDrag = () => { if (dragIdx >= 0) { dragIdx = -1; edited(); } };
+  cv.addEventListener("pointerup", endDrag); cv.addEventListener("pointercancel", endDrag);
+  cv.addEventListener("dblclick", e => { const [px, py] = local(e), i = hit(px, py); if (i >= 0) removePoint(i); });
+
+  el("btnGen").addEventListener("click", () => { clearTimeout(pending); generate(); });
+  el("btnRandom").addEventListener("click", () => {
+    const rnd = mulberry32((Date.now() ^ (runCounter * 2654435761)) >>> 0), n = 4 + Math.floor(rnd() * 2);
+    // spread points around a loose loop so a single coupler curve can pass through them
+    const cx = -20 + 40 * rnd(), cy = -10 + 20 * rnd(), rx = 45 + 30 * rnd(), ry = 30 + 20 * rnd(), a0 = rnd() * 6.28;
+    targets = Array.from({ length: n }, (_, k) => {
+      const a = a0 + (k / n) * 2 * Math.PI + (rnd() - 0.5) * 0.5;
+      return clampWS(Math.round(cx + rx * Math.cos(a) * (0.8 + 0.3 * rnd())), Math.round(cy + ry * Math.sin(a) * (0.8 + 0.3 * rnd())));
+    });
+    stale = true; clearTimeout(pending); generate();
+  });
+  el("btnPlay").addEventListener("click", () => { playing = !playing; el("btnPlay").textContent = playing ? "Pause" : "Play"; el("btnPlay").setAttribute("aria-pressed", String(playing)); });
+  if (!playing) { el("btnPlay").textContent = "Play"; el("btnPlay").setAttribute("aria-pressed", "false"); }
+  el("tol").addEventListener("change", renderPanel);
+  el("muLim").addEventListener("change", () => { stale = true; clearTimeout(pending); generate(); });
+  el("btnCopy").addEventListener("click", () => {
+    const txt = designJSON(); if (!txt) return;
+    const ok = () => { el("copied").hidden = false; setTimeout(() => { el("copied").hidden = true; }, 1600); };
+    const fallback = () => { const t = el("copyFallback"); t.hidden = false; t.value = txt; t.focus(); t.select(); };
+    try { navigator.clipboard.writeText(txt).then(ok, fallback); } catch (e) { fallback(); }
+  });
+
+  // test hook for automated checks
+  window.__mg = { synthesize, evaluate, pose, grashofCrank, generate, toScreen: (x, y) => [X(x), Y(y)], get designs() { return designs; }, get targets() { return targets; } };
+  // open with the example already solved (the solver's own output for the starting points, rounded)
+  const EXAMPLE = [
+    { v: [-54.499092, -32.037989, -173.109011, 57.84899, 75.926177, 140.733939, 125.335336, -42.981976, 45.383166], br: 1 },
+    { v: [59.588771, 23.52571, -45.511522, 128.282973, 68.888228, 156.687102, 122.068581, 62.686518, 26.982485], br: 1 },
+    { v: [-1.972607, -63.67756, 70.644644, -173.997305, 45.329324, 165.576714, 136.243506, -58.765911, -17.333329], br: -1 }];
+  designs = EXAMPLE.map(d => ({ v: d.v, br: d.br, report: evaluate(d.v, d.br, targets, 720) })).filter(d => d.report);
+  runCounter = 1;
+  setStatus("ok", "Example design · drag a point or press Generate");
+  renderPanel();
+})();
+</script>
+
+</body>
+</html>
