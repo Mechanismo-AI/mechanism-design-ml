@@ -6,12 +6,15 @@ This is a research project, not a product. It has a working planar four-bar sear
 
 **[Try the four-bar playground →](https://mechanismo-ai.github.io/mechanism-design-ml/)** Drag a few target points and it designs a linkage that traces a path through them, in your browser.
 
+**[Install the engine on your own computer →](https://github.com/Mechanismo-AI/mechanism-generator-classic)** A frozen, open-weight release of the research engine (v0.1.0a10), with step-by-step setup.
+
 
 ## What exists
 
 - **OMTS, an open task-specification format for mechanisms.** A task says where a part must be carried, held or flipped, and to what tolerance, including timing, synchronization, collision geometry and dwell demands. Validation is strict: an unsupported feature is rejected loudly, never dropped silently.
 - **A planar four-bar research engine**, plus an experimental six-bar motion solver. It searches candidate mechanisms against three-pose tasks, checks each one against physical and kinematic criteria, and exports every candidate with its evidence.
 - **Verification tooling** for lines of mechanisms that must work together: master-cycle synchronization, per-task phase offsets, and sampled collision occupancy.
+- **An installable classic release** of the four-bar research engine, with its three proposal models as open weights, the OMTS tools and the full training code: [mechanism-generator-classic](https://github.com/Mechanismo-AI/mechanism-generator-classic).
 - **A browser playground** (above) with a simplified four-bar path generator anyone can use without installing anything.
 - **Recorded case studies** (below), each following the same loop: a plain-language brief, a measured failure of the current engine, a capability design, and a decision.
 
@@ -61,6 +64,23 @@ It uses a simplified solver written for the page (random valid designs, then Nel
 ![A four-bar linkage whose coupler curve passes through three target points, with the crank, coupler, rocker and ground links drawn and the error at each target labelled](images/four-bar-research-engine.png)
 
 *A design from the research engine for a three-point task. It passed the engine's practical selection checks but not all of its preferred engineering thresholds, and it is not hardware-validated.*
+
+## Run it on your own computer
+
+[mechanism-generator-classic](https://github.com/Mechanismo-AI/mechanism-generator-classic) is the research engine as released in October 2026 (v0.1.0a10), republished as a frozen, installable package. It designs planar four-bar linkages for three target positions or poses, validates OMTS task files, and includes the full training pipeline. Its tests run on Windows and Linux with Python 3.10 and 3.12. With Python 3.12 and Git installed:
+
+```sh
+git clone https://github.com/Mechanismo-AI/mechanism-generator-classic
+cd mechanism-generator-classic
+python -m venv .venv
+. .venv/bin/activate        # Windows PowerShell: .\.venv\Scripts\Activate.ps1
+python -m pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install ".[engine]"
+mechanism-models download --directory models
+mechanism-generate --models-directory models --targets -6 2 -2 6 0.5 3.5 --branches both --device cpu --headless --output_root runs/demo
+```
+
+The model download is about 22 MB and is checked against SHA-256 hashes. The release is not maintained; newer work is private.
 
 ## Related work
 
