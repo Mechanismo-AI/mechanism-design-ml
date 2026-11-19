@@ -101,7 +101,7 @@ This project is a small part of a fast-moving field. The [LINKS dataset](https:/
 
 ## About this repository
 
-This is a public summary. The full engineering record is kept in a private repository, and I'm glad to share it on request. The project's mission and review standards are in the [community repository](https://github.com/Mechanismo-AI/mechanism-generator-community).
+This is a public summary. The full engineering record is kept in a private repository, and I'm glad to share it on request.
 
 Python: the classic engine uses PyTorch and NumPy; the mechanism library uses NumPy and SciPy only; YAML and JSON-schema validation. This repository is Apache-2.0.
 
