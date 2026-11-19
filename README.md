@@ -56,7 +56,7 @@ A review of the work by fresh reviewers on 29 October found, among other things,
 
 ## Lines: several mechanisms working together
 
-A line's brief says what part moves, how far apart the stations stand, the cycle time and the build accuracy. One command picks a mechanism for every station, lays the line out, times it, checks it and draws it. On a two-core machine that takes one to two hours, most of it the mis-built copies.
+A line's brief says what part moves, how far apart the stations stand, the cycle time and the build accuracy. One command picks a mechanism for every station, lays the line out, times it, checks it and draws it. On a two-core machine that takes twenty minutes to two hours, much of it the mis-built copies.
 
 | Line | What it is | Result |
 |---|---|---|
