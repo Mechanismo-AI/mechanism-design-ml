@@ -46,10 +46,10 @@ Each outcome below is a recorded result. None involves a built mechanism.
 The selector is run on 28 constructed briefs: the three case-study briefs plus variations in span, tolerance, dwell, available space and carrier pose. Every pick passes its family's verifier, keeps at least 90% of 40 copies built with ±0.05 mm errors, and does so again on 80 fresh copies. Results from the run of 19 November 2026:
 
 - **27 of 28 briefs get a pick.** Rocker cam 15, barrel cam 5, geared five-bar 5, slider-crank 1, plate cam 1. One brief, a short, wide band with a hold, gets none: the three designs that pass its verifier keep between 42% and 60% of their copies, and the selector refuses them where it used to offer one.
-- **The floor changed who wins.** Ranked for robustness with no floor, an earlier run gave the barrel cam 11 briefs and the rocker cam 9. With the floor, the smaller of the designs that clear it wins, and that is usually a rocker cam.
+- **The floor changed who wins.** Ranked for robustness with no floor, an earlier run gave the barrel cam 11 briefs and the rocker cam 9. With the floor, a design that meets the brief exactly is preferred to one that approximates it, and then the smaller wins. That is usually a rocker cam.
 - **A pick chosen on noisy grades can be flattered.** When confirmation on fresh copies was introduced, it set aside two designs that had passed on the copies they were chosen on.
 - **An honest pressure angle costs size.** Cams are held to the textbook limits (30° for a sliding follower, 45° for a swinging one) and designed half a degree inside them, so a small build error does not push a copy over. That margin makes the plate and barrel cams 1 to 2% larger.
-- **Linkages are held to a textbook angle as well.** A linkage keeps at least 30° of transmission angle through its whole cycle, and a rod that drives a slide stays within 45° of it. Adopting that rule on 19 November made every slider-crank about a fifth larger and left two briefs with no four-bar that passes. No pick changed family at ±0.05 mm.
+- **Linkages are held to a textbook angle as well.** A linkage keeps at least 30° of transmission angle through its whole cycle, and a rod that drives a slide stays within 45° of it. Adopting that rule on 19 November made every slider-crank 17 to 18% larger and left two briefs with no four-bar that passes. No pick changed family at ±0.05 mm.
 - **The space decides the family.** Briefs whose carrier tilts go to the geared five-bar (92 mm on the tabletop brief, where no four-bar now passes).
 - **Printed builds lose a few.** At ±0.2 mm, the tolerance of a typical desktop print, 24 of the 28 briefs keep a pick, and three that went to a slider-crank now go to a rocker cam.
 
@@ -64,7 +64,7 @@ A line's brief says what part moves, how far apart the stations stand, the cycle
 | Puck line | Three transfers passing a 25 mm puck through two fixed nests, on a 2 s cycle, built to ±0.3 mm | Works as designed, and on 100 of 100 mis-built copies |
 | Test line A | Five stations, two of them holding the puck still for a labelling stop | Works as designed, and on 100 of 100 copies |
 | Test line B | A six-stop index table between two transfers (the line linked at the top of this page) | Works as designed, and on 99 of 100 copies. The one failure is the table's own drive, at the rate its 95% robustness predicts |
-| Test line C | A carton turned a quarter turn by a four-stop table | In progress |
+| Test line C | A 60 × 40 mm carton turned a quarter turn by a four-stop index table | Works as designed, and on 96 of 100 copies |
 
 Each test line is run through the command as it stands, and every break is written down before anything is fixed. That list is the point of the exercise. Two examples: on test line A a station's cam drum was laid out across the line, through its neighbours; on test line C the carton was given a half turn where the brief asked for a quarter, and every check passed, because nothing yet compared which way a part faced. Both are fixed, with a test that fails without the fix. A third came from the project's own rule change: when the angle rule above was adopted, test line A stopped passing, because its outfeed was forced to be a slider-crank and the longer one reached a neighbour's cam drum. Left to choose that station's mechanism, the selector picked a barrel cam and the line passes again. The forced version is kept as a failing example.
 
@@ -84,7 +84,7 @@ Every experiment followed one protocol: the scorecard and decision rules were wr
 
 ## Next
 
-Private work continues on the third test line, on sets of mechanisms that draw a given shape between them, and on taking one design through to a built mechanism measured against its prediction. I’m happy to discuss it.
+Private work continues on sets of mechanisms that draw a given shape between them, and on taking one design through to a built mechanism measured against its prediction. I’m happy to discuss it.
 
 ## Try it
 
