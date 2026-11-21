@@ -38,25 +38,26 @@ Each outcome below is a recorded result. None involves a built mechanism.
 | Case | Task | What was recorded |
 |---|---|---|
 | Dwell station | Hold a carried point within 0.3 mm for at least 50° of crank rotation | The best four-bar candidates missed the stillness demand by 203.69×. A cam dwell-arc design analysis reaches a nominal 53.8° dwell width, with a guaranteed 52.7° at a 0.05 mm tolerance class. The selector's pick today is a rocker cam of 261 mm envelope radius that keeps 90% of its 40 simulated mis-built copies (±0.05 mm) and 94% of 80 fresh ones; the smallest verified barrel cam is 678 mm. A design analysis, not a built part. |
-| Gap transfer | Carry a part level across a 260 mm gap at packaging tolerance | Successive six-bar attempts stayed well above tolerance (as high as about 27× in the last recorded iteration). A dual-cam and lever design analysis then met its pressure-angle gate (worst case 29.7° against a 30° limit, a thin margin) inside a declared 600 × 600 mm envelope. The envelope is an assumption, not a derived requirement. The selector's pick today is a rocker cam of 216 mm envelope radius, which keeps every mis-built copy, over a 286 mm slider-crank; the best four-bar it found needs 947 mm. |
+| Gap transfer | Carry a part level across a 260 mm gap at packaging tolerance | Successive six-bar attempts stayed well above tolerance (as high as about 27× in the last recorded iteration). A dual-cam and lever design analysis then met its pressure-angle gate (worst case 29.7° against a 30° limit, a thin margin) inside a declared 600 × 600 mm envelope. The envelope is an assumption, not a derived requirement. The selector's pick today is a rocker cam of 216 mm envelope radius, which keeps every mis-built copy, over a 338 mm slider-crank; the best four-bar it found needs 985 mm. |
 | Flip station | Flip a flat part 180° between stations | Both families tried, a groove cam and six-bar linkages, failed on their own instruments. Recorded as unsolved, with the evidence kept as data. |
 
 ## Choosing the mechanism: what the benchmark shows
 
-The selector is run on 28 constructed briefs: the three case-study briefs plus variations in span, tolerance, dwell, available space and carrier pose. Every pick passes its family's verifier, keeps at least 90% of 40 copies built with ±0.05 mm errors, and does so again on 80 fresh copies. Results from the run of 11 November 2026:
+The selector is run on 28 constructed briefs: the three case-study briefs plus variations in span, tolerance, dwell, available space and carrier pose. Every pick passes its family's verifier, keeps at least 90% of 40 copies built with ±0.05 mm errors, and does so again on 80 fresh copies. Results from the run of 19 November 2026:
 
 - **27 of 28 briefs get a pick.** Rocker cam 15, barrel cam 5, geared five-bar 5, slider-crank 1, plate cam 1. One brief, a short, wide band with a hold, gets none: the three designs that pass its verifier keep between 42% and 60% of their copies, and the selector refuses them where it used to offer one.
 - **The floor changed who wins.** Ranked for robustness with no floor, an earlier run gave the barrel cam 11 briefs and the rocker cam 9. With the floor, the smaller of the designs that clear it wins, and that is usually a rocker cam.
 - **A pick chosen on noisy grades can be flattered.** When confirmation on fresh copies was introduced, it set aside two designs that had passed on the copies they were chosen on.
 - **An honest pressure angle costs size.** Cams are held to the textbook limits (30° for a sliding follower, 45° for a swinging one) and designed half a degree inside them, so a small build error does not push a copy over. That margin makes the plate and barrel cams 1 to 2% larger.
-- **The space decides the family.** Briefs whose carrier tilts go to the geared five-bar (90 mm on the tabletop brief against the four-bar's 244).
-- **Printed builds lose a few.** At ±0.2 mm, the tolerance of a typical desktop print, 24 of the 28 briefs keep a pick.
+- **Linkages are held to a textbook angle as well.** A linkage keeps at least 30° of transmission angle through its whole cycle, and a rod that drives a slide stays within 45° of it. Adopting that rule on 19 November made every slider-crank about a fifth larger and left two briefs with no four-bar that passes. No pick changed family at ±0.05 mm.
+- **The space decides the family.** Briefs whose carrier tilts go to the geared five-bar (92 mm on the tabletop brief, where no four-bar now passes).
+- **Printed builds lose a few.** At ±0.2 mm, the tolerance of a typical desktop print, 24 of the 28 briefs keep a pick, and three that went to a slider-crank now go to a rocker cam.
 
 A review of the work by fresh reviewers on 29 October found, among other things, a showcase cam running at a 61° pressure angle and a benchmark comparison skewed by an unequal search. Both were fixed, and the numbers on this page come from committed run records.
 
 ## Lines: several mechanisms working together
 
-A line's brief says what part moves, how far apart the stations stand, the cycle time and the build accuracy. One command picks a mechanism for every station, lays the line out, times it, checks it and draws it. On a two-core machine that takes twenty minutes to two hours, much of it the mis-built copies.
+A line's brief says what part moves, how far apart the stations stand, the cycle time and the build accuracy. One command picks a mechanism for every station, lays the line out, times it, checks it and draws it. On a two-core machine that takes from half an hour to three and a half hours, most of it the mis-built copies.
 
 | Line | What it is | Result |
 |---|---|---|
@@ -65,7 +66,7 @@ A line's brief says what part moves, how far apart the stations stand, the cycle
 | Test line B | A six-stop index table between two transfers (the line linked at the top of this page) | Works as designed, and on 99 of 100 copies. The one failure is the table's own drive, at the rate its 95% robustness predicts |
 | Test line C | A carton turned a quarter turn by a four-stop table | In progress |
 
-Each test line is run through the command as it stands, and every break is written down before anything is fixed. That list is the point of the exercise. Two examples: on test line A a station's cam drum was laid out across the line, through its neighbours; on test line C the carton was given a half turn where the brief asked for a quarter, and every check passed, because nothing yet compared which way a part faced. Both are fixed, with a test that fails without the fix.
+Each test line is run through the command as it stands, and every break is written down before anything is fixed. That list is the point of the exercise. Two examples: on test line A a station's cam drum was laid out across the line, through its neighbours; on test line C the carton was given a half turn where the brief asked for a quarter, and every check passed, because nothing yet compared which way a part faced. Both are fixed, with a test that fails without the fix. A third came from the project's own rule change: when the angle rule above was adopted, test line A stopped passing, because its outfeed was forced to be a slider-crank and the longer one reached a neighbour's cam drum. Left to choose that station's mechanism, the selector picked a barrel cam and the line passes again. The forced version is kept as a failing example.
 
 ## What the learned models showed
 
