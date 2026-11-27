@@ -4,7 +4,7 @@
 
 This is a research project, not a product. It has an open task-specification format, a planar four-bar search engine, and a private library that designs nine mechanism families, picks between them for a brief, and puts several of them together into a small production line that is checked as a whole. It has not yet produced a mechanism that was built and tested in hardware. This page says what works, what does not, and how the work was done.
 
-**[Watch a designed line run →](https://run.mechanismo.ai/index-table-line.html)** A three-station line with an index table in the middle, designed from its brief and played in your browser from the same data as its CAD model.
+**[Watch a designed line run →](https://run.mechanismo.ai/)** A three-station line with an index table in the middle, designed from its brief and played in your browser from the same data as its CAD model.
 
 **[Try the four-bar playground →](https://mechanismo-ai.github.io/mechanism-design-ml/)** Drag a few target points and it designs a linkage that traces a path through them, in your browser.
 
